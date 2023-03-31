@@ -1,0 +1,23 @@
+{
+	"name": "M12_PL_Hello",
+	"properties": {
+		"activities": [
+			{
+				"name": "Set variable1",
+				"type": "SetVariable",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "Hello",
+					"value": "Hello"
+				}
+			}
+		],
+		"variables": {
+			"Hello": {
+				"type": "String"
+			}
+		},
+		"annotations": []
+	}
+}
