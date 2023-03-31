@@ -1,0 +1,13 @@
+{
+	"name": "DS_Logs",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "azure_mentoring_azuresqlserver_nb",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": []
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

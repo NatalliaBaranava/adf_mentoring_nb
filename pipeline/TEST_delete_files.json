@@ -1,0 +1,126 @@
+{
+	"name": "TEST_delete_files",
+	"properties": {
+		"activities": [
+			{
+				"name": "ACT_Delete_DataLake_files",
+				"type": "Delete",
+				"dependsOn": [
+					{
+						"activity": "ACT_Delete_Blob_files",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataset": {
+						"referenceName": "DS_ADLS_Json_online",
+						"type": "DatasetReference"
+					},
+					"logStorageSettings": {
+						"linkedServiceName": {
+							"referenceName": "azure_mentoring_datalake_nb",
+							"type": "LinkedServiceReference"
+						},
+						"path": "log"
+					},
+					"enableLogging": true,
+					"storeSettings": {
+						"type": "AzureBlobFSReadSettings",
+						"recursive": false,
+						"wildcardFileName": "*.json",
+						"enablePartitionDiscovery": false
+					}
+				}
+			},
+			{
+				"name": "ACT_Delete_Blob_files",
+				"type": "Delete",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataset": {
+						"referenceName": "DS_ABLB_Json_online",
+						"type": "DatasetReference",
+						"parameters": {
+							"file_name": "*"
+						}
+					},
+					"logStorageSettings": {
+						"linkedServiceName": {
+							"referenceName": "azure_mentoring_datalake_nb",
+							"type": "LinkedServiceReference"
+						},
+						"path": "log"
+					},
+					"enableLogging": true,
+					"storeSettings": {
+						"type": "AzureBlobStorageReadSettings",
+						"recursive": false,
+						"wildcardFileName": "*.json",
+						"enablePartitionDiscovery": false
+					}
+				}
+			},
+			{
+				"name": "ACT_Delete_DataLake_Archive_files",
+				"type": "Delete",
+				"dependsOn": [
+					{
+						"activity": "ACT_Delete_DataLake_files",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataset": {
+						"referenceName": "DS_ADLS_online_archive",
+						"type": "DatasetReference"
+					},
+					"logStorageSettings": {
+						"linkedServiceName": {
+							"referenceName": "azure_mentoring_datalake_nb",
+							"type": "LinkedServiceReference"
+						},
+						"path": "log"
+					},
+					"enableLogging": true,
+					"storeSettings": {
+						"type": "AzureBlobFSReadSettings",
+						"recursive": false,
+						"wildcardFileName": "*.json",
+						"enablePartitionDiscovery": false
+					}
+				}
+			}
+		],
+		"annotations": [],
+		"lastPublishTime": "2023-03-28T12:08:36Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

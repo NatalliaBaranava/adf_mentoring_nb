@@ -1,0 +1,17 @@
+{
+	"name": "DS_ASQL_credits",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "azure_mentoring_azuresqlserver_nb",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [],
+		"typeProperties": {
+			"schema": "stg",
+			"table": "credits"
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

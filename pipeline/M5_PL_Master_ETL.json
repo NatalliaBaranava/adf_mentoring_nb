@@ -1,0 +1,63 @@
+{
+	"name": "M5_PL_Master_ETL",
+	"properties": {
+		"activities": [
+			{
+				"name": "PL_DATA_ABLB_To_ADLS_copy",
+				"type": "ExecutePipeline",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "M2_PL_DATA_ABLB_To_ADLS_copy",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true
+				}
+			},
+			{
+				"name": "PL_DATA_ADLS_ASQL_populate_tables",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "PL_DATA_ABLB_To_ADLS_copy",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "M5_PL_DATA_ADLS_ASQL_populate_tables_without_cycle",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true
+				}
+			},
+			{
+				"name": "PL_DATA_ADLS_Archive_files",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "PL_DATA_ADLS_ASQL_populate_tables",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "M5_PL_DATA_ADLS_Archive_files_binary_ds",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true
+				}
+			}
+		],
+		"annotations": [],
+		"lastPublishTime": "2023-03-28T11:58:31Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

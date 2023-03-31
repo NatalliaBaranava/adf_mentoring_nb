@@ -1,0 +1,149 @@
+{
+	"name": "M7_PL_DATA_ABLB_To_ADLS_online_copy",
+	"properties": {
+		"activities": [
+			{
+				"name": "ACT_IncrementalFilesCopy",
+				"type": "Copy",
+				"dependsOn": [
+					{
+						"activity": "LookupWatermark_LastModifiedDate",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [
+					{
+						"name": "Source",
+						"value": "online//"
+					},
+					{
+						"name": "Destination",
+						"value": "raw/online/"
+					}
+				],
+				"typeProperties": {
+					"source": {
+						"type": "BinarySource",
+						"storeSettings": {
+							"type": "AzureBlobStorageReadSettings",
+							"recursive": true,
+							"modifiedDatetimeStart": {
+								"value": "@activity('LookupWatermark_LastModifiedDate').output.firstRow.WatermarkValue",
+								"type": "Expression"
+							},
+							"modifiedDatetimeEnd": {
+								"value": "@utcnow()",
+								"type": "Expression"
+							},
+							"wildcardFileName": "*.json",
+							"deleteFilesAfterCompletion": false
+						},
+						"formatSettings": {
+							"type": "BinaryReadSettings"
+						}
+					},
+					"sink": {
+						"type": "BinarySink",
+						"storeSettings": {
+							"type": "AzureBlobFSWriteSettings"
+						}
+					},
+					"enableStaging": false,
+					"enableSkipIncompatibleRow": false,
+					"skipErrorFile": {
+						"fileMissing": true
+					},
+					"validateDataConsistency": false
+				},
+				"inputs": [
+					{
+						"referenceName": "DS_ABLB_Json_online",
+						"type": "DatasetReference",
+						"parameters": {
+							"file_name": "*"
+						}
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "DS_ADLS_Json_online",
+						"type": "DatasetReference"
+					}
+				]
+			},
+			{
+				"name": "LookupWatermark_LastModifiedDate",
+				"type": "Lookup",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "AzureSqlSource",
+						"sqlReaderQuery": "SELECT WatermarkValue FROM [dbo].[watermark_ABLS_online]",
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"dataset": {
+						"referenceName": "DS_ASQL_cinema_tickets",
+						"type": "DatasetReference"
+					}
+				}
+			},
+			{
+				"name": "ACT_UpdateWatermark",
+				"type": "SqlServerStoredProcedure",
+				"dependsOn": [
+					{
+						"activity": "ACT_IncrementalFilesCopy",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"storedProcedureName": "[dbo].[spWriteWatermark_ABLS_online]",
+					"storedProcedureParameters": {
+						"LastModifiedtime": {
+							"value": {
+								"value": "@utcnow()",
+								"type": "Expression"
+							},
+							"type": "DateTime"
+						}
+					}
+				},
+				"linkedServiceName": {
+					"referenceName": "azure_mentoring_azuresqlserver_nb",
+					"type": "LinkedServiceReference"
+				}
+			}
+		],
+		"annotations": [],
+		"lastPublishTime": "2023-03-28T12:02:17Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

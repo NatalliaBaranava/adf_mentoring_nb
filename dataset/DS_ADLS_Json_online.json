@@ -1,0 +1,19 @@
+{
+	"name": "DS_ADLS_Json_online",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "AzureDataLakeStorage_test",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "Binary",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"folderPath": "online",
+				"fileSystem": "raw"
+			}
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

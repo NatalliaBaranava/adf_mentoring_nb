@@ -1,0 +1,11 @@
+{
+	"name": "azure_mentoring_datalake_nb",
+	"type": "Microsoft.DataFactory/factories/linkedservices",
+	"properties": {
+		"annotations": [],
+		"type": "AzureBlobFS",
+		"typeProperties": {
+			"url": "https://azurementoringdatalakenb.dfs.core.windows.net"
+		}
+	}
+}

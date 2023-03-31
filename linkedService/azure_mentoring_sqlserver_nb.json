@@ -1,0 +1,22 @@
+{
+	"name": "azure_mentoring_sqlserver_nb",
+	"type": "Microsoft.DataFactory/factories/linkedservices",
+	"properties": {
+		"annotations": [],
+		"type": "SqlServer",
+		"typeProperties": {
+			"connectionString": {
+				"type": "AzureKeyVaultSecret",
+				"store": {
+					"referenceName": "mentoring_key_vault_nb",
+					"type": "LinkedServiceReference"
+				},
+				"secretName": "sqldatabase-connectionstring"
+			}
+		},
+		"connectVia": {
+			"referenceName": "SelfHostedIR",
+			"type": "IntegrationRuntimeReference"
+		}
+	}
+}

@@ -1,0 +1,134 @@
+{
+	"name": "DF_DATA_ASQL_FACT",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "DS_ASQL_Movies_OnlinePurchase",
+						"type": "DatasetReference"
+					},
+					"name": "sourceOnlinePurchase"
+				},
+				{
+					"dataset": {
+						"referenceName": "DS_ASQL_DataMart_DimDate",
+						"type": "DatasetReference"
+					},
+					"name": "sourceDimDate"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "DS_ASQL_DataMart_FactOnlinePurchase",
+						"type": "DatasetReference"
+					},
+					"name": "sinkFactOnlinePurchase"
+				},
+				{
+					"dataset": {
+						"referenceName": "DS_ASQL_DataMart_FactOnlinePurchase_MonthlySnapshot",
+						"type": "DatasetReference"
+					},
+					"name": "sinkFactMonthlySnapshot"
+				}
+			],
+			"transformations": [
+				{
+					"name": "DerivedTransactionDateColumn"
+				},
+				{
+					"name": "joinOnlinePurchaseVsDimDate"
+				},
+				{
+					"name": "aggregateSumCount"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          Id as integer,",
+				"          ServiceId as integer,",
+				"          MovieId as integer,",
+				"          UserId as integer,",
+				"          Price as decimal(4,1),",
+				"          TransactionId as string,",
+				"          TransactionDate as timestamp,",
+				"          CreatedDate as timestamp,",
+				"          ModifiedDate as timestamp,",
+				"          SrcFileName as string",
+				"     ),",
+				"     allowSchemaDrift: false,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     format: 'table') ~> sourceOnlinePurchase",
+				"source(output(",
+				"          TheDateKey as integer,",
+				"          TheDate as date,",
+				"          TheDay as integer,",
+				"          TheDayName as string,",
+				"          TheWeek as integer,",
+				"          TheISOWeek as integer,",
+				"          TheDayOfWeek as integer,",
+				"          TheMonth as integer,",
+				"          TheMonthName as string,",
+				"          TheQuarter as integer,",
+				"          TheYear as integer,",
+				"          TheFirstOfMonth as date,",
+				"          TheLastOfYear as date,",
+				"          TheDayOfYear as integer",
+				"     ),",
+				"     allowSchemaDrift: false,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     format: 'table') ~> sourceDimDate",
+				"sourceOnlinePurchase derive(TransactionDate = toInteger(replace(dropRight(toString(TransactionDate),9),'-',''))) ~> DerivedTransactionDateColumn",
+				"sourceOnlinePurchase, sourceDimDate join(toInteger(replace(dropRight(toString(TransactionDate),9),'-','')) == TheDateKey,",
+				"     joinType:'left',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> joinOnlinePurchaseVsDimDate",
+				"joinOnlinePurchaseVsDimDate aggregate(groupBy(ServiceId,",
+				"          TheMonth),",
+				"     Price = sum(Price),",
+				"          TransactionId = count(TransactionId)) ~> aggregateSumCount",
+				"DerivedTransactionDateColumn sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     truncate:true,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          OnlineServiceKey = ServiceId,",
+				"          MovieKey = MovieId,",
+				"          Price,",
+				"          TransactionId,",
+				"          DateKey = TransactionDate",
+				"     )) ~> sinkFactOnlinePurchase",
+				"aggregateSumCount sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     truncate:true,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          OnlineServiceKey = ServiceId,",
+				"          PurchaseAmount = Price,",
+				"          PurchaseQuantity = TransactionId,",
+				"          MonthKey = TheMonth",
+				"     )) ~> sinkFactMonthlySnapshot"
+			]
+		}
+	}
+}

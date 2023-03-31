@@ -1,0 +1,19 @@
+{
+	"name": "DS_Binary_Sink",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "azure_mentoring_datalake_nb",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "Binary",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"folderPath": "movies/archive",
+				"fileSystem": "raw"
+			}
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

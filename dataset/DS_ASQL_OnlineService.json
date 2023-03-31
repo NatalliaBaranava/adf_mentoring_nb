@@ -1,0 +1,17 @@
+{
+	"name": "DS_ASQL_OnlineService",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "azure_mentoring_azuresqlserver_nb",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [],
+		"typeProperties": {
+			"schema": "dbo",
+			"table": "tOnlineService"
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

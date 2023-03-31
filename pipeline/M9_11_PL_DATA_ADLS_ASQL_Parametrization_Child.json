@@ -1,0 +1,718 @@
+{
+	"name": "M9_11_PL_DATA_ADLS_ASQL_Parametrization_Child",
+	"properties": {
+		"activities": [
+			{
+				"name": "ACT_Copy_Files_to_ASQL",
+				"type": "Copy",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "DelimitedTextSource",
+						"additionalColumns": [
+							{
+								"name": "pipelineId",
+								"value": {
+									"value": "@pipeline().RunId",
+									"type": "Expression"
+								}
+							},
+							{
+								"name": "source_filename",
+								"value": "$$FILEPATH"
+							}
+						],
+						"storeSettings": {
+							"type": "AzureBlobFSReadSettings",
+							"recursive": false,
+							"wildcardFolderPath": {
+								"value": "@pipeline().parameters.SourceFolderName",
+								"type": "Expression"
+							},
+							"wildcardFileName": {
+								"value": "@pipeline().parameters.SourceFileName",
+								"type": "Expression"
+							},
+							"enablePartitionDiscovery": false
+						},
+						"formatSettings": {
+							"type": "DelimitedTextReadSettings"
+						}
+					},
+					"sink": {
+						"type": "AzureSqlSink",
+						"preCopyScript": {
+							"value": "@{concat('TRUNCATE TABLE ', pipeline().parameters.DestinationSchemaName,'.',pipeline().parameters.DestinationTableName)}",
+							"type": "Expression"
+						},
+						"writeBehavior": "insert",
+						"sqlWriterUseTableLock": false,
+						"disableMetricsCollection": false
+					},
+					"enableStaging": false,
+					"dataIntegrationUnits": {
+						"value": "@pipeline().parameters.CopyDIUValue",
+						"type": "Expression"
+					},
+					"translator": {
+						"value": "@pipeline().parameters.CopyMapping",
+						"type": "Expression"
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "DS_ADLS_Parametrization",
+						"type": "DatasetReference",
+						"parameters": {
+							"SourceContainerName": {
+								"value": "@pipeline().parameters.SourceContainerName",
+								"type": "Expression"
+							},
+							"SourceFolderName": {
+								"value": "@pipeline().parameters.SourceFolderName",
+								"type": "Expression"
+							},
+							"SourceFileName": {
+								"value": "@pipeline().parameters.SourceFileName",
+								"type": "Expression"
+							},
+							"SourceColumnDelimeter": {
+								"value": "@pipeline().parameters.SourceColumnDelimeter",
+								"type": "Expression"
+							},
+							"SourceEncoding": {
+								"value": "@pipeline().parameters.SourceEncoding",
+								"type": "Expression"
+							},
+							"SourceEscapeCharacter": {
+								"value": "@pipeline().parameters.SourceEscapeCharacter",
+								"type": "Expression"
+							},
+							"SourceQuoteCharacter": {
+								"value": "@pipeline().parameters.SourceQuoteCharacter",
+								"type": "Expression"
+							}
+						}
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "DS_ASQL_Parametrization",
+						"type": "DatasetReference",
+						"parameters": {
+							"DestinationSchemaName": {
+								"value": "@pipeline().parameters.DestinationSchemaName",
+								"type": "Expression"
+							},
+							"DestinationTableName": {
+								"value": "@pipeline().parameters.DestinationTableName",
+								"type": "Expression"
+							}
+						}
+					}
+				]
+			},
+			{
+				"name": "Exec_SP_spPopulateCopyLogs",
+				"type": "SqlServerStoredProcedure",
+				"dependsOn": [
+					{
+						"activity": "ACT_Copy_Files_to_ASQL",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"storedProcedureName": "[dbo].[spPopulateCopyLogs]",
+					"storedProcedureParameters": {
+						"CopyBillingDuration": {
+							"value": {
+								"value": "@activity('ACT_Copy_Files_to_ASQL').output.billingReference.billableDuration[0].duration",
+								"type": "Expression"
+							},
+							"type": "String"
+						},
+						"CopyBillingMeterType": {
+							"value": {
+								"value": "@activity('ACT_Copy_Files_to_ASQL').output.billingReference.billableDuration[0].meterType",
+								"type": "Expression"
+							},
+							"type": "String"
+						},
+						"CopyBillingUnit": {
+							"value": {
+								"value": "@activity('ACT_Copy_Files_to_ASQL').output.billingReference.billableDuration[0].unit",
+								"type": "Expression"
+							},
+							"type": "String"
+						},
+						"CopyExecutionCopyDuration": {
+							"value": {
+								"value": "@activity('ACT_Copy_Files_to_ASQL').output.copyDuration",
+								"type": "Expression"
+							},
+							"type": "String"
+						},
+						"CopyExecutionEndTime": {
+							"value": {
+								"value": "@utcnow()",
+								"type": "Expression"
+							},
+							"type": "DateTime"
+						},
+						"CopyExecutionQueueDuration": {
+							"value": {
+								"value": "@activity('ACT_Copy_Files_to_ASQL').output.executionDetails[0].detailedDurations.queuingDuration",
+								"type": "Expression"
+							},
+							"type": "String"
+						},
+						"CopyExecutionStartTime": {
+							"value": {
+								"value": "@activity('ACT_Copy_Files_to_ASQL').output.executionDetails[0].start",
+								"type": "Expression"
+							},
+							"type": "DateTime"
+						},
+						"CopyExecutionStatus": {
+							"value": {
+								"value": "@activity('ACT_Copy_Files_to_ASQL').output.executionDetails[0].status",
+								"type": "Expression"
+							},
+							"type": "String"
+						},
+						"CopyExecutionTransferDuration": {
+							"value": {
+								"value": "@activity('ACT_Copy_Files_to_ASQL').output.executionDetails[0].detailedDurations.transferDuration",
+								"type": "Expression"
+							},
+							"type": "String"
+						},
+						"CopyStatisticsNumberProcessedFiles": {
+							"value": {
+								"value": "@activity('ACT_Copy_Files_to_ASQL').output.filesRead",
+								"type": "Expression"
+							},
+							"type": "Int32"
+						},
+						"CopyStatisticsNumberRowsCopied": {
+							"value": {
+								"value": "@activity('ACT_Copy_Files_to_ASQL').output.rowsCopied",
+								"type": "Expression"
+							},
+							"type": "Int32"
+						},
+						"CopyStatisticsNumberRowsRead": {
+							"value": {
+								"value": "@activity('ACT_Copy_Files_to_ASQL').output.rowsRead",
+								"type": "Expression"
+							},
+							"type": "Int32"
+						},
+						"CopyStatisticsUsedDIU": {
+							"value": {
+								"value": "@activity('ACT_Copy_Files_to_ASQL').output.usedDataIntegrationUnits",
+								"type": "Expression"
+							},
+							"type": "Int32"
+						},
+						"CopyStatisticsUsedParallelCopies": {
+							"value": {
+								"value": "@activity('ACT_Copy_Files_to_ASQL').output.usedParallelCopies",
+								"type": "Expression"
+							},
+							"type": "Int32"
+						},
+						"PipelineName": {
+							"value": {
+								"value": "@pipeline().Pipeline",
+								"type": "Expression"
+							},
+							"type": "String"
+						},
+						"PipelineRunID": {
+							"value": {
+								"value": "@pipeline().RunId",
+								"type": "Expression"
+							},
+							"type": "String"
+						},
+						"CopyStatisticsSourceFileName": {
+							"value": {
+								"value": "@pipeline().parameters.SourceFileName",
+								"type": "Expression"
+							},
+							"type": "String"
+						}
+					}
+				},
+				"linkedServiceName": {
+					"referenceName": "azure_mentoring_azuresqlserver_nb",
+					"type": "LinkedServiceReference"
+				}
+			},
+			{
+				"name": "ACT_Copy_Logs_DataLake",
+				"type": "Copy",
+				"dependsOn": [
+					{
+						"activity": "ACT_Copy_Files_to_ASQL",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "AzureSqlSource",
+						"sqlReaderQuery": {
+							"value": "SELECT \n'@{pipeline().Pipeline}' as PipelineName,\n'@{pipeline().RunId}' as PipelineRunID,\n'@{activity('ACT_Copy_Files_to_ASQL').output.billingReference.billableDuration[0].meterType}' as CopyBillingMeterType,\n'@{activity('ACT_Copy_Files_to_ASQL').output.billingReference.billableDuration[0].duration}' as CopyBillingDuration,\n'@{activity('ACT_Copy_Files_to_ASQL').output.billingReference.billableDuration[0].unit}' as CopyBillingUnit,\n'@{pipeline().parameters.SourceFileName}' as CopyStatisticsSourceFileName,\n'@{activity('ACT_Copy_Files_to_ASQL').output.filesRead}' as CopyStatisticsNumberProcessedFiles,\n'@{activity('ACT_Copy_Files_to_ASQL').output.rowsCopied}' as CopyStatisticsNumberRowsCopied,\n'@{activity('ACT_Copy_Files_to_ASQL').output.rowsRead}' as CopyStatisticsNumberRowsRead,\n'@{activity('ACT_Copy_Files_to_ASQL').output.usedDataIntegrationUnits}' as CopyStatisticsUsedDIU,\n'@{activity('ACT_Copy_Files_to_ASQL').output.usedParallelCopies}' as CopyStatisticsUsedParallelCopies,\n'@{activity('ACT_Copy_Files_to_ASQL').output.executionDetails[0].start}' as CopyExecutionStartTime,\n'@{formatDateTime(utcnow(), 'yyyyMMddHHmmss')}' as CopyExecutionEndTime,\n'@{activity('ACT_Copy_Files_to_ASQL').output.executionDetails[0].status}' as CopyExecutionStatus,\n'@{activity('ACT_Copy_Files_to_ASQL').output.executionDetails[0].detailedDurations.queuingDuration}' as CopyExecutionQueueDuration,\n'@{activity('ACT_Copy_Files_to_ASQL').output.executionDetails[0].detailedDurations.transferDuration}' as CopyExecutionTransferDuration,\n'@{activity('ACT_Copy_Files_to_ASQL').output.copyDuration}' as CopyExecutionCopyDuration",
+							"type": "Expression"
+						},
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"sink": {
+						"type": "DelimitedTextSink",
+						"storeSettings": {
+							"type": "AzureBlobFSWriteSettings"
+						},
+						"formatSettings": {
+							"type": "DelimitedTextWriteSettings",
+							"quoteAllText": true,
+							"fileExtension": ".txt"
+						}
+					},
+					"enableStaging": false,
+					"translator": {
+						"type": "TabularTranslator",
+						"typeConversion": true,
+						"typeConversionSettings": {
+							"allowDataTruncation": true,
+							"treatBooleanAsNumber": false
+						}
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "DS_Logs",
+						"type": "DatasetReference"
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "DS_ADLS_Parametrization",
+						"type": "DatasetReference",
+						"parameters": {
+							"SourceContainerName": "log",
+							"SourceFolderName": "metadata-driven",
+							"SourceFileName": {
+								"value": "@concat(\n'CopyLogs_',\nreplace(pipeline().parameters.SourceFileName,\n\t\t'.',\n\t\t\tconcat('_',\n\t\t\t\t\tformatDateTime(utcnow(), 'yyyyMMddHHmmss'),\n\t\t\t\t\t'.'\n\t\t\t\t   )\n\t\t)\n)",
+								"type": "Expression"
+							},
+							"SourceColumnDelimeter": ",",
+							"SourceEncoding": "UTF-8",
+							"SourceEscapeCharacter": "\"",
+							"SourceQuoteCharacter": "\""
+						}
+					}
+				]
+			},
+			{
+				"name": "Exec_spPipelineErrors_ASQL",
+				"type": "SqlServerStoredProcedure",
+				"dependsOn": [
+					{
+						"activity": "ACT_Copy_Files_to_ASQL",
+						"dependencyConditions": [
+							"Failed"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"storedProcedureName": "[dbo].[spPipelineErrors]",
+					"storedProcedureParameters": {
+						"ActivityName": {
+							"value": {
+								"value": "ACT_Copy_Files_to_ASQL",
+								"type": "Expression"
+							},
+							"type": "String"
+						},
+						"ErrorCode": {
+							"value": {
+								"value": "@activity('ACT_Copy_Files_to_ASQL').output.errors[0].Code",
+								"type": "Expression"
+							},
+							"type": "String"
+						},
+						"ErrorDatetime": {
+							"value": {
+								"value": "@activity('ACT_Copy_Files_to_ASQL').output.executionDetails[0].start",
+								"type": "Expression"
+							},
+							"type": "DateTime"
+						},
+						"ErrorMessage": {
+							"value": {
+								"value": "@activity('ACT_Copy_Files_to_ASQL').output.errors[0].Message",
+								"type": "Expression"
+							},
+							"type": "String"
+						},
+						"ErrorType": {
+							"value": {
+								"value": "@activity('ACT_Copy_Files_to_ASQL').output.errors[0].EventType",
+								"type": "Expression"
+							},
+							"type": "String"
+						},
+						"PipelineName": {
+							"value": {
+								"value": "@pipeline().Pipeline",
+								"type": "Expression"
+							},
+							"type": "String"
+						},
+						"PipelineRunID": {
+							"value": {
+								"value": "@pipeline().RunId",
+								"type": "Expression"
+							},
+							"type": "String"
+						}
+					}
+				},
+				"linkedServiceName": {
+					"referenceName": "azure_mentoring_azuresqlserver_nb",
+					"type": "LinkedServiceReference"
+				}
+			},
+			{
+				"name": "Exec_spPipelineErrors_ADLS",
+				"type": "SqlServerStoredProcedure",
+				"dependsOn": [
+					{
+						"activity": "ACT_Copy_Logs_DataLake",
+						"dependencyConditions": [
+							"Failed"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"storedProcedureName": "[dbo].[spPipelineErrors]",
+					"storedProcedureParameters": {
+						"ActivityName": {
+							"value": {
+								"value": "ACT_Copy_Logs_DataLake",
+								"type": "Expression"
+							},
+							"type": "String"
+						},
+						"ErrorCode": {
+							"value": {
+								"value": "@activity('ACT_Copy_Logs_DataLake').output.errors[0].Code",
+								"type": "Expression"
+							},
+							"type": "String"
+						},
+						"ErrorDatetime": {
+							"value": {
+								"value": "@activity('ACT_Copy_Logs_DataLake').output.executionDetails[0].start",
+								"type": "Expression"
+							},
+							"type": "DateTime"
+						},
+						"ErrorMessage": {
+							"value": {
+								"value": "@activity('ACT_Copy_Logs_DataLake').output.errors[0].Message",
+								"type": "Expression"
+							},
+							"type": "String"
+						},
+						"ErrorType": {
+							"value": {
+								"value": "@activity('ACT_Copy_Logs_DataLake').output.errors[0].EventType",
+								"type": "Expression"
+							},
+							"type": "String"
+						},
+						"PipelineName": {
+							"value": {
+								"value": "@pipeline().Pipeline",
+								"type": "Expression"
+							},
+							"type": "String"
+						},
+						"PipelineRunID": {
+							"value": {
+								"value": "@pipeline().RunId",
+								"type": "Expression"
+							},
+							"type": "String"
+						}
+					}
+				},
+				"linkedServiceName": {
+					"referenceName": "azure_mentoring_azuresqlserver_nb",
+					"type": "LinkedServiceReference"
+				}
+			},
+			{
+				"name": "Exec_spPipelineErrors_Logs",
+				"type": "SqlServerStoredProcedure",
+				"dependsOn": [
+					{
+						"activity": "Exec_SP_spPopulateCopyLogs",
+						"dependencyConditions": [
+							"Failed"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"storedProcedureName": "[dbo].[spPipelineErrors]",
+					"storedProcedureParameters": {
+						"ActivityName": {
+							"value": {
+								"value": "Exec_SP_spPopulateCopyLogs",
+								"type": "Expression"
+							},
+							"type": "String"
+						},
+						"ErrorCode": {
+							"value": {
+								"value": "@activity('Exec_SP_spPopulateCopyLogs').error.errorCode",
+								"type": "Expression"
+							},
+							"type": "String"
+						},
+						"ErrorDatetime": {
+							"value": {
+								"value": "@utcnow()",
+								"type": "Expression"
+							},
+							"type": "DateTime"
+						},
+						"ErrorMessage": {
+							"value": {
+								"value": "@activity('Exec_SP_spPopulateCopyLogs').error.message",
+								"type": "Expression"
+							},
+							"type": "String"
+						},
+						"ErrorType": {
+							"value": {
+								"value": "@activity('Exec_SP_spPopulateCopyLogs').error.failureType",
+								"type": "Expression"
+							},
+							"type": "String"
+						},
+						"PipelineName": {
+							"value": {
+								"value": "@pipeline().Pipeline",
+								"type": "Expression"
+							},
+							"type": "String"
+						},
+						"PipelineRunID": {
+							"value": {
+								"value": "@pipeline().RunId",
+								"type": "Expression"
+							},
+							"type": "String"
+						}
+					}
+				},
+				"linkedServiceName": {
+					"referenceName": "azure_mentoring_azuresqlserver_nb",
+					"type": "LinkedServiceReference"
+				}
+			},
+			{
+				"name": "SendEmailNotofication_Failed",
+				"type": "WebActivity",
+				"dependsOn": [
+					{
+						"activity": "Exec_spPipelineErrors_ADLS",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					},
+					{
+						"activity": "Get_AzureLogicAppURL",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"url": {
+						"value": "@activity('Get_AzureLogicAppURL').output.value",
+						"type": "Expression"
+					},
+					"method": "POST",
+					"body": {
+						"value": "{\n\"pipelineStatus\" : \"Error\",\n\"pipelineName\" : \"@{pipeline().Pipeline}\",\n\"dataFactoryName\" : \"@{pipeline().DataFactory}\",\n\"pipelineRunID\" : \"@{pipeline().RunId}\",\n\"errorMessage\": \"@{activity('ACT_Copy_Logs_DataLake').output.errors[0].Message}\"\n}",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "Get_AzureLogicAppURL",
+				"type": "WebActivity",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"url": {
+						"value": "@pipeline().globalParameters.azurelogicappURI",
+						"type": "Expression"
+					},
+					"method": "GET",
+					"authentication": {
+						"type": "MSI",
+						"resource": "https://vault.azure.net"
+					}
+				}
+			},
+			{
+				"name": "SendEmailNotofication_Succsseded",
+				"type": "WebActivity",
+				"dependsOn": [
+					{
+						"activity": "ACT_Copy_Logs_DataLake",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					},
+					{
+						"activity": "Get_AzureLogicAppURL",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"url": {
+						"value": "@activity('Get_AzureLogicAppURL').output.value",
+						"type": "Expression"
+					},
+					"method": "POST",
+					"body": {
+						"value": "{\n\"pipelineStatus\" : \"Success\",\n\"pipelineName\" : \"@{pipeline().Pipeline}\",\n\"dataFactoryName\" : \"@{pipeline().DataFactory}\",\n\"pipelineRunID\" : \"@{pipeline().RunId}\"\n}",
+						"type": "Expression"
+					}
+				}
+			}
+		],
+		"parameters": {
+			"SourceContainerName": {
+				"type": "string"
+			},
+			"SourceFolderName": {
+				"type": "string"
+			},
+			"SourceFileName": {
+				"type": "string"
+			},
+			"SourceColumnDelimeter": {
+				"type": "string"
+			},
+			"SourceEncoding": {
+				"type": "string"
+			},
+			"SourceEscapeCharacter": {
+				"type": "string"
+			},
+			"SourceQuoteCharacter": {
+				"type": "string"
+			},
+			"DestinationSchemaName": {
+				"type": "string"
+			},
+			"DestinationTableName": {
+				"type": "string"
+			},
+			"CopyDIUValue": {
+				"type": "int"
+			},
+			"CopyMapping": {
+				"type": "object"
+			}
+		},
+		"annotations": [],
+		"lastPublishTime": "2023-03-28T15:27:11Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

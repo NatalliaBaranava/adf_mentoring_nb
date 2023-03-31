@@ -1,0 +1,17 @@
+{
+	"name": "mentoring-adf-nb",
+	"properties": {
+		"globalParameters": {
+			"azurelogicappURI": {
+				"type": "string",
+				"value": "https://mentoring-key-vault-nb.vault.azure.net/secrets/azurelogicappURL/bc4aacd6ec0a4376871d958ed7624378?api-version=7.0"
+			}
+		}
+	},
+	"location": "francecentral",
+	"identity": {
+		"type": "SystemAssigned",
+		"principalId": "91c3294e-ee58-410d-8d43-6c5bbb870633",
+		"tenantId": "c90bc39a-6a5a-4c5a-a1d8-3cb4b2bbbfe7"
+	}
+}

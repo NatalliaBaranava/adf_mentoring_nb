@@ -1,0 +1,20 @@
+{
+	"name": "M10_PL_FAIL",
+	"properties": {
+		"activities": [
+			{
+				"name": "Fail1",
+				"type": "Fail",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"message": "fail",
+					"errorCode": "fail"
+				}
+			}
+		],
+		"annotations": [],
+		"lastPublishTime": "2023-03-28T12:08:36Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

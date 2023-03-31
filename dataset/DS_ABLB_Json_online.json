@@ -1,0 +1,27 @@
+{
+	"name": "DS_ABLB_Json_online",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "AzureBlobStorage_online",
+			"type": "LinkedServiceReference"
+		},
+		"parameters": {
+			"file_name": {
+				"type": "string"
+			}
+		},
+		"annotations": [],
+		"type": "Binary",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobStorageLocation",
+				"fileName": {
+					"value": "@dataset().file_name",
+					"type": "Expression"
+				},
+				"container": "online"
+			}
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

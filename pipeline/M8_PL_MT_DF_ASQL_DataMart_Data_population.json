@@ -1,0 +1,65 @@
+{
+	"name": "M8_PL_MT_DF_ASQL_DataMart_Data_population",
+	"properties": {
+		"activities": [
+			{
+				"name": "ACT_DF_DATA_ASQL_DIM_population",
+				"type": "ExecuteDataFlow",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataflow": {
+						"referenceName": "DF_DATA_ASQL_DIM",
+						"type": "DataFlowReference"
+					},
+					"compute": {
+						"coreCount": 8,
+						"computeType": "General"
+					},
+					"traceLevel": "Fine"
+				}
+			},
+			{
+				"name": "ACT_DF_DATA_ASQL_FACT_Population",
+				"type": "ExecuteDataFlow",
+				"dependsOn": [
+					{
+						"activity": "ACT_DF_DATA_ASQL_DIM_population",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataflow": {
+						"referenceName": "DF_DATA_ASQL_FACT_NEW",
+						"type": "DataFlowReference"
+					},
+					"compute": {
+						"coreCount": 8,
+						"computeType": "General"
+					},
+					"traceLevel": "Fine"
+				}
+			}
+		],
+		"annotations": [],
+		"lastPublishTime": "2023-03-28T12:02:17Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

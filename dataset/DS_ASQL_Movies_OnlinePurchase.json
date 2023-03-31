@@ -1,0 +1,17 @@
+{
+	"name": "DS_ASQL_Movies_OnlinePurchase",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "azure_mentoring_azuresqlserver_nb",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [],
+		"typeProperties": {
+			"schema": "dbo",
+			"table": "tOnlinePurchase"
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

@@ -1,0 +1,195 @@
+{
+	"name": "M9_PL_DATA_ADLS_ASQL_Parametrization_Master",
+	"properties": {
+		"activities": [
+			{
+				"name": "ACT_Lookup_ControlMetadata",
+				"type": "Lookup",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "AzureSqlSource",
+						"sqlReaderQuery": "SELECT\n\tSourceContainerName,\n\tSourceFolderName,\n\tSourceFileName,\n\tSourceColumnDelimeter,\n\tSourceEncoding,\n\tSourceEscapeCharacter,\n\tSourceQuoteCharacter,\n\tDestinationSchemaName,\n\tDestinationTableName,\n\tCopyDIUValue,\n\tCopyMapping\nFROM\n\t[etl].[tControlMetadata]",
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"dataset": {
+						"referenceName": "DS_ASQL_ControlMetadata",
+						"type": "DatasetReference"
+					},
+					"firstRowOnly": false
+				}
+			},
+			{
+				"name": "CopyEachFile",
+				"type": "ForEach",
+				"dependsOn": [
+					{
+						"activity": "ACT_Lookup_ControlMetadata",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"items": {
+						"value": "@activity('ACT_Lookup_ControlMetadata').output.value",
+						"type": "Expression"
+					},
+					"isSequential": false,
+					"activities": [
+						{
+							"name": "Exec_Parametrization_Child",
+							"type": "ExecutePipeline",
+							"dependsOn": [],
+							"userProperties": [],
+							"typeProperties": {
+								"pipeline": {
+									"referenceName": "M9_11_PL_DATA_ADLS_ASQL_Parametrization_Child",
+									"type": "PipelineReference"
+								},
+								"waitOnCompletion": true,
+								"parameters": {
+									"SourceContainerName": {
+										"value": "@item().SourceContainerName",
+										"type": "Expression"
+									},
+									"SourceFolderName": {
+										"value": "@item().SourceFolderName",
+										"type": "Expression"
+									},
+									"SourceFileName": {
+										"value": "@item().SourceFileName",
+										"type": "Expression"
+									},
+									"SourceColumnDelimeter": {
+										"value": "@item().SourceColumnDelimeter",
+										"type": "Expression"
+									},
+									"SourceEncoding": {
+										"value": "@item().SourceEncoding",
+										"type": "Expression"
+									},
+									"SourceEscapeCharacter": {
+										"value": "@item().SourceEscapeCharacter",
+										"type": "Expression"
+									},
+									"SourceQuoteCharacter": {
+										"value": "@item().SourceQuoteCharacter",
+										"type": "Expression"
+									},
+									"DestinationSchemaName": {
+										"value": "@item().DestinationSchemaName",
+										"type": "Expression"
+									},
+									"DestinationTableName": {
+										"value": "@item().DestinationTableName",
+										"type": "Expression"
+									},
+									"CopyDIUValue": {
+										"value": "@item().CopyDIUValue",
+										"type": "Expression"
+									},
+									"CopyMapping": {
+										"value": "@item().CopyMapping",
+										"type": "Expression"
+									}
+								}
+							}
+						}
+					]
+				}
+			},
+			{
+				"name": "Exec_spPipelineErrors_Lookup",
+				"type": "SqlServerStoredProcedure",
+				"dependsOn": [
+					{
+						"activity": "ACT_Lookup_ControlMetadata",
+						"dependencyConditions": [
+							"Failed"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"storedProcedureName": "[dbo].[spPipelineErrors]",
+					"storedProcedureParameters": {
+						"ActivityName": {
+							"value": {
+								"value": "ACT_Lookup_ControlMetadata",
+								"type": "Expression"
+							},
+							"type": "String"
+						},
+						"ErrorCode": {
+							"value": {
+								"value": "@activity('ACT_Lookup_ControlMetadata').error.errorCode",
+								"type": "Expression"
+							},
+							"type": "String"
+						},
+						"ErrorDatetime": {
+							"value": {
+								"value": "@utcnow()",
+								"type": "Expression"
+							},
+							"type": "DateTime"
+						},
+						"ErrorMessage": {
+							"value": {
+								"value": "@activity('ACT_Lookup_ControlMetadata').error.message",
+								"type": "Expression"
+							},
+							"type": "String"
+						},
+						"ErrorType": {
+							"value": {
+								"value": "@activity('ACT_Lookup_ControlMetadata').error.failureType",
+								"type": "Expression"
+							},
+							"type": "String"
+						},
+						"PipelineName": {
+							"value": {
+								"value": "@pipeline().Pipeline",
+								"type": "Expression"
+							},
+							"type": "String"
+						},
+						"PipelineRunID": {
+							"value": {
+								"value": "@pipeline().RunId",
+								"type": "Expression"
+							},
+							"type": "String"
+						}
+					}
+				},
+				"linkedServiceName": {
+					"referenceName": "azure_mentoring_azuresqlserver_nb",
+					"type": "LinkedServiceReference"
+				}
+			}
+		],
+		"annotations": [],
+		"lastPublishTime": "2023-03-28T12:06:41Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

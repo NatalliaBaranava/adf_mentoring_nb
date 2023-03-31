@@ -1,0 +1,219 @@
+{
+	"name": "DF_DATA_ASQL_FACT_NEW",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "DS_ASQL_Movies_OnlinePurchase",
+						"type": "DatasetReference"
+					},
+					"name": "sourceOnlinePurchase"
+				},
+				{
+					"dataset": {
+						"referenceName": "DS_ASQL_OnlineService",
+						"type": "DatasetReference"
+					},
+					"name": "sourceOnlineService"
+				},
+				{
+					"dataset": {
+						"referenceName": "DS_ASQL_DataMart_DimOnlineService",
+						"type": "DatasetReference"
+					},
+					"name": "sourceDimOnlineService"
+				},
+				{
+					"dataset": {
+						"referenceName": "DS_ASQL_DataMart_DimMovie",
+						"type": "DatasetReference"
+					},
+					"name": "sourceDimMovie"
+				},
+				{
+					"dataset": {
+						"referenceName": "DS_ASQL_dbo_movies",
+						"type": "DatasetReference"
+					},
+					"name": "sourceMovies"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "DS_ASQL_DataMart_FactOnlinePurchase",
+						"type": "DatasetReference"
+					},
+					"name": "sinkFactOnlinePurchase"
+				},
+				{
+					"dataset": {
+						"referenceName": "DS_ASQL_DataMart_FactOnlinePurchase_MonthlySnapshot",
+						"type": "DatasetReference"
+					},
+					"name": "sinkFactMonthlySnapshot"
+				}
+			],
+			"transformations": [
+				{
+					"name": "DerivedDateKey"
+				},
+				{
+					"name": "aggregateSumCount"
+				},
+				{
+					"name": "derivedMonthKey"
+				},
+				{
+					"name": "joinOnlineService"
+				},
+				{
+					"name": "joinDimOnlineService"
+				},
+				{
+					"name": "joinMovies"
+				},
+				{
+					"name": "joinDimMovie"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          Id as integer,",
+				"          ServiceId as integer,",
+				"          MovieId as integer,",
+				"          UserId as integer,",
+				"          Price as decimal(4,1),",
+				"          TransactionId as string,",
+				"          TransactionDate as timestamp,",
+				"          CreatedDate as timestamp,",
+				"          ModifiedDate as timestamp,",
+				"          SrcFileName as string",
+				"     ),",
+				"     allowSchemaDrift: false,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     format: 'table') ~> sourceOnlinePurchase",
+				"source(output(",
+				"          ServiceId as integer,",
+				"          ServiceCode as string,",
+				"          ServiceName as string,",
+				"          CreatedDate as timestamp,",
+				"          ModifiedDate as timestamp",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     format: 'table') ~> sourceOnlineService",
+				"source(output(",
+				"          ServiceKey as integer,",
+				"          ServiceCode as string,",
+				"          ServiceName as string,",
+				"          CreatedDate as timestamp,",
+				"          ModifiedDate as timestamp",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     format: 'table') ~> sourceDimOnlineService",
+				"source(output(",
+				"          MovieKey as integer,",
+				"          MovieIdNK as integer,",
+				"          Title as string,",
+				"          ReleaseDate as date,",
+				"          Runtime as integer,",
+				"          MovieStatus as string,",
+				"          CreatedDate as timestamp,",
+				"          ModifiedDate as timestamp",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     format: 'table') ~> sourceDimMovie",
+				"source(output(",
+				"          MovieId as integer,",
+				"          MovieIdNK as integer,",
+				"          Budget as integer,",
+				"          HomepagePath as string,",
+				"          Title as string,",
+				"          OriginalTitle as string,",
+				"          ReleaseDate as date,",
+				"          Revenue as long,",
+				"          Runtime as integer,",
+				"          MovieStatusId as integer,",
+				"          AvgVote as decimal(3,1),",
+				"          CreatedDate as timestamp,",
+				"          ModifiedDate as timestamp,",
+				"          SrcFileName as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     format: 'table') ~> sourceMovies",
+				"joinDimOnlineService derive(DateKey_derived = toInteger(replace(dropRight(toString(TransactionDate),9),'-',''))) ~> DerivedDateKey",
+				"derivedMonthKey aggregate(groupBy(ServiceKey,",
+				"          MonthKey_derived),",
+				"     Price = sum(Price),",
+				"          TransactionId = count(TransactionId)) ~> aggregateSumCount",
+				"joinDimOnlineService derive(MonthKey_derived = toInteger(replace(dropRight(toString(TransactionDate),11),'-',''))) ~> derivedMonthKey",
+				"joinDimMovie, sourceOnlineService join(sourceOnlinePurchase@ServiceId == sourceOnlineService@ServiceId,",
+				"     joinType:'left',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> joinOnlineService",
+				"joinOnlineService, sourceDimOnlineService join(sourceOnlineService@ServiceCode == sourceDimOnlineService@ServiceCode,",
+				"     joinType:'left',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> joinDimOnlineService",
+				"sourceOnlinePurchase, sourceMovies join(sourceOnlinePurchase@MovieId == sourceMovies@MovieId,",
+				"     joinType:'left',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> joinMovies",
+				"joinMovies, sourceDimMovie join(sourceMovies@MovieIdNK == sourceDimMovie@MovieIdNK,",
+				"     joinType:'left',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> joinDimMovie",
+				"DerivedDateKey sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     truncate:true,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          MovieKey = sourceDimMovie@MovieIdNK,",
+				"          Price,",
+				"          TransactionId,",
+				"          OnlineServiceKey = ServiceKey,",
+				"          DateKey = DateKey_derived",
+				"     )) ~> sinkFactOnlinePurchase",
+				"aggregateSumCount sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     truncate:true,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          OnlineServiceKey = ServiceKey,",
+				"          MonthKey = MonthKey_derived,",
+				"          PurchaseAmount = Price,",
+				"          PurchaseQuantity = TransactionId",
+				"     )) ~> sinkFactMonthlySnapshot"
+			]
+		}
+	}
+}
