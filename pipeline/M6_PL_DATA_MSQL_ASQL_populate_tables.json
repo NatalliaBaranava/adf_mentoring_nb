@@ -81,7 +81,7 @@
 					"source": {
 						"type": "SqlServerSource",
 						"sqlReaderQuery": {
-							"value": "select * from [dbo].[Tickets] where [TransactionDt] > '@{activity('LookupAzureData_Old_TransactionDt').output.firstRow.WatermarkValue}' and [TransactionDt] <= '@{activity('LookupOnPremData_New_TransactionDt').output.firstRow.NewWatermarkvalue}'",
+							"value": "select * from [dbo].[Tickets] where [TransactionDt] > '@{activity('Old_LookupAzureData_TransactionDt').output.firstRow.WatermarkValue}' and [TransactionDt] <= '@{activity('New_LookupOnPremData_TransactionDt').output.firstRow.NewWatermarkvalue}'",
 							"type": "Expression"
 						},
 						"queryTimeout": "02:00:00",
@@ -231,7 +231,7 @@
 					"storedProcedureParameters": {
 						"LastModifiedtime": {
 							"value": {
-								"value": "@{activity('LookupOnPremData_New_TransactionDt').output.firstRow.NewWatermarkvalue}",
+								"value": "@{activity('New_LookupOnPremData_TransactionDt').output.firstRow.NewWatermarkvalue}",
 								"type": "Expression"
 							},
 							"type": "DateTime"
