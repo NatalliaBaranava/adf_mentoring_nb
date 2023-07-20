@@ -3,7 +3,7 @@
 	"properties": {
 		"activities": [
 			{
-				"name": "LookupOnPremData_New_TransactionDt",
+				"name": "New_LookupOnPremData_TransactionDt",
 				"type": "Lookup",
 				"dependsOn": [],
 				"policy": {
@@ -28,7 +28,7 @@
 				}
 			},
 			{
-				"name": "LookupAzureData_Old_TransactionDt",
+				"name": "Old_LookupAzureData_TransactionDt",
 				"type": "Lookup",
 				"dependsOn": [],
 				"policy": {
@@ -57,13 +57,13 @@
 				"type": "Copy",
 				"dependsOn": [
 					{
-						"activity": "LookupOnPremData_New_TransactionDt",
+						"activity": "New_LookupOnPremData_TransactionDt",
 						"dependencyConditions": [
 							"Succeeded"
 						]
 					},
 					{
-						"activity": "LookupAzureData_Old_TransactionDt",
+						"activity": "Old_LookupAzureData_TransactionDt",
 						"dependencyConditions": [
 							"Succeeded"
 						]
