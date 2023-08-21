@@ -19,9 +19,9 @@
 						"referenceName": "DF_DATA_ASQL_DIM",
 						"type": "DataFlowReference"
 					},
-					"compute": {
-						"coreCount": 8,
-						"computeType": "General"
+					"integrationRuntime": {
+						"referenceName": "AzureCentralFranceIR",
+						"type": "IntegrationRuntimeReference"
 					},
 					"traceLevel": "Fine"
 				}
@@ -50,9 +50,9 @@
 						"referenceName": "DF_DATA_ASQL_FACT_NEW",
 						"type": "DataFlowReference"
 					},
-					"compute": {
-						"coreCount": 8,
-						"computeType": "General"
+					"integrationRuntime": {
+						"referenceName": "AzureCentralFranceIR",
+						"type": "IntegrationRuntimeReference"
 					},
 					"traceLevel": "Fine"
 				}
