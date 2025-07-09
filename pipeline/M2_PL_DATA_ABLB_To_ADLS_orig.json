@@ -1,5 +1,5 @@
 {
-	"name": "M2_PL_DATA_ABLB_To_ADLS_copy",
+	"name": "M2_PL_DATA_ABLB_To_ADLS_orig",
 	"properties": {
 		"activities": [
 			{
@@ -146,6 +146,10 @@
 						]
 					}
 				],
+				"policy": {
+					"secureOutput": false,
+					"secureInput": false
+				},
 				"userProperties": [],
 				"typeProperties": {
 					"variableName": "datetime",
