@@ -1,0 +1,45 @@
+{
+	"$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"value": "mentoring-adf-nb"
+		},
+		"AzureBlobStorage_online_connectionString": {
+			"value": ""
+		},
+		"AzureDataLakeStorage_test_accountKey": {
+			"value": ""
+		},
+		"azure_mentoring_storage_au_nb_connectionString": {
+			"value": ""
+		},
+		"azure_mentoring_storage_online_test_connectionString": {
+			"value": ""
+		},
+		"AzureDataLakeStorage_test_properties_typeProperties_url": {
+			"value": "https://azurementoringdatalakenb.dfs.core.windows.net/"
+		},
+		"azure_mentoring_azuresqlserver_DataMart_nb_properties_typeProperties_connectionString_secretName": {
+			"value": "azuresqldatabase-DataMart-connectionstring"
+		},
+		"azure_mentoring_azuresqlserver_nb_properties_typeProperties_connectionString_secretName": {
+			"value": "azuresqldatabase-connectionstring"
+		},
+		"azure_mentoring_datalake_nb_properties_typeProperties_url": {
+			"value": "https://azurementoringdatalakenb.dfs.core.windows.net"
+		},
+		"azure_mentoring_sqlserver_nb_properties_typeProperties_connectionString_secretName": {
+			"value": "sqldatabase-connectionstring"
+		},
+		"azure_mentoring_storage_nb_properties_typeProperties_sasUri_secretName": {
+			"value": "azurementoringstoragenb-SAS-URL"
+		},
+		"azure_mentoring_storage_online_nb_properties_typeProperties_sasUri_secretName": {
+			"value": "azurementoringstorageonlinenb-SAS-URL"
+		},
+		"mentoring_key_vault_nb_properties_typeProperties_baseUrl": {
+			"value": "https://mentoring-key-vault-nb.vault.azure.net/"
+		}
+	}
+}

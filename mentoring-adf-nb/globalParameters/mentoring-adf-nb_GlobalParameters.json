@@ -1,0 +1,6 @@
+{
+	"azurelogicappURI": {
+		"type": "string",
+		"value": "https://mentoring-key-vault-nb.vault.azure.net/secrets/azurelogicappURL/bc4aacd6ec0a4376871d958ed7624378?api-version=7.0"
+	}
+}

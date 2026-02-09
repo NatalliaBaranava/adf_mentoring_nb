@@ -1,0 +1,186 @@
+{
+	"$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"type": "string",
+			"metadata": "Data Factory name",
+			"defaultValue": "mentoring-adf-nb"
+		},
+		"AzureBlobStorage_online_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'AzureBlobStorage_online'"
+		},
+		"AzureDataLakeStorage_test_accountKey": {
+			"type": "secureString",
+			"metadata": "Secure string for 'accountKey' of 'AzureDataLakeStorage_test'"
+		},
+		"azure_mentoring_storage_au_nb_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'azure_mentoring_storage_au_nb'"
+		},
+		"azure_mentoring_storage_online_test_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'azure_mentoring_storage_online_test'"
+		},
+		"AzureDataLakeStorage_test_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "https://azurementoringdatalakenb.dfs.core.windows.net/"
+		},
+		"azure_mentoring_azuresqlserver_DataMart_nb_properties_typeProperties_connectionString_secretName": {
+			"type": "string",
+			"defaultValue": "azuresqldatabase-DataMart-connectionstring"
+		},
+		"azure_mentoring_azuresqlserver_nb_properties_typeProperties_connectionString_secretName": {
+			"type": "string",
+			"defaultValue": "azuresqldatabase-connectionstring"
+		},
+		"azure_mentoring_datalake_nb_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "https://azurementoringdatalakenb.dfs.core.windows.net"
+		},
+		"azure_mentoring_sqlserver_nb_properties_typeProperties_connectionString_secretName": {
+			"type": "string",
+			"defaultValue": "sqldatabase-connectionstring"
+		},
+		"azure_mentoring_storage_nb_properties_typeProperties_sasUri_secretName": {
+			"type": "string",
+			"defaultValue": "azurementoringstoragenb-SAS-URL"
+		},
+		"azure_mentoring_storage_online_nb_properties_typeProperties_sasUri_secretName": {
+			"type": "string",
+			"defaultValue": "azurementoringstorageonlinenb-SAS-URL"
+		},
+		"mentoring_key_vault_nb_properties_typeProperties_baseUrl": {
+			"type": "string",
+			"defaultValue": "https://mentoring-key-vault-nb.vault.azure.net/"
+		},
+		"containerUri": {
+			"type": "string",
+			"metadata": "URI to storage account containing linked ARM templates"
+		},
+		"containerSasToken": {
+			"type": "string",
+			"metadata": "Sas token to storage account containing linked ARM templates"
+		}
+	},
+	"variables": {
+		"factoryId": "[concat('Microsoft.DataFactory/factories/', parameters('factoryName'))]"
+	},
+	"resources": [
+		{
+			"name": "mentoring-adf-nb_ArmTemplate_0",
+			"type": "Microsoft.Resources/deployments",
+			"apiVersion": "2024-03-01",
+			"properties": {
+				"mode": "incremental",
+				"templateLink": {
+					"uri": "[concat(parameters('containerUri'), '/ArmTemplate_0.json', parameters('containerSasToken'))]",
+					"contentVersion": "1.0.0.0"
+				},
+				"parameters": {
+					"factoryName": {
+						"value": "[parameters('factoryName')]"
+					},
+					"AzureBlobStorage_online_connectionString": {
+						"value": "[parameters('AzureBlobStorage_online_connectionString')]"
+					},
+					"AzureDataLakeStorage_test_accountKey": {
+						"value": "[parameters('AzureDataLakeStorage_test_accountKey')]"
+					},
+					"azure_mentoring_storage_au_nb_connectionString": {
+						"value": "[parameters('azure_mentoring_storage_au_nb_connectionString')]"
+					},
+					"azure_mentoring_storage_online_test_connectionString": {
+						"value": "[parameters('azure_mentoring_storage_online_test_connectionString')]"
+					},
+					"AzureDataLakeStorage_test_properties_typeProperties_url": {
+						"value": "[parameters('AzureDataLakeStorage_test_properties_typeProperties_url')]"
+					},
+					"azure_mentoring_datalake_nb_properties_typeProperties_url": {
+						"value": "[parameters('azure_mentoring_datalake_nb_properties_typeProperties_url')]"
+					},
+					"mentoring_key_vault_nb_properties_typeProperties_baseUrl": {
+						"value": "[parameters('mentoring_key_vault_nb_properties_typeProperties_baseUrl')]"
+					}
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "mentoring-adf-nb_ArmTemplate_1",
+			"type": "Microsoft.Resources/deployments",
+			"apiVersion": "2024-03-01",
+			"properties": {
+				"mode": "incremental",
+				"templateLink": {
+					"uri": "[concat(parameters('containerUri'), '/ArmTemplate_1.json', parameters('containerSasToken'))]",
+					"contentVersion": "1.0.0.0"
+				},
+				"parameters": {
+					"factoryName": {
+						"value": "[parameters('factoryName')]"
+					},
+					"azure_mentoring_azuresqlserver_DataMart_nb_properties_typeProperties_connectionString_secretName": {
+						"value": "[parameters('azure_mentoring_azuresqlserver_DataMart_nb_properties_typeProperties_connectionString_secretName')]"
+					},
+					"azure_mentoring_azuresqlserver_nb_properties_typeProperties_connectionString_secretName": {
+						"value": "[parameters('azure_mentoring_azuresqlserver_nb_properties_typeProperties_connectionString_secretName')]"
+					},
+					"azure_mentoring_sqlserver_nb_properties_typeProperties_connectionString_secretName": {
+						"value": "[parameters('azure_mentoring_sqlserver_nb_properties_typeProperties_connectionString_secretName')]"
+					},
+					"azure_mentoring_storage_nb_properties_typeProperties_sasUri_secretName": {
+						"value": "[parameters('azure_mentoring_storage_nb_properties_typeProperties_sasUri_secretName')]"
+					},
+					"azure_mentoring_storage_online_nb_properties_typeProperties_sasUri_secretName": {
+						"value": "[parameters('azure_mentoring_storage_online_nb_properties_typeProperties_sasUri_secretName')]"
+					}
+				}
+			},
+			"dependsOn": [
+				"[resourceId('Microsoft.Resources/deployments', 'mentoring-adf-nb_ArmTemplate_0')]"
+			]
+		},
+		{
+			"name": "mentoring-adf-nb_ArmTemplate_2",
+			"type": "Microsoft.Resources/deployments",
+			"apiVersion": "2024-03-01",
+			"properties": {
+				"mode": "incremental",
+				"templateLink": {
+					"uri": "[concat(parameters('containerUri'), '/ArmTemplate_2.json', parameters('containerSasToken'))]",
+					"contentVersion": "1.0.0.0"
+				},
+				"parameters": {
+					"factoryName": {
+						"value": "[parameters('factoryName')]"
+					}
+				}
+			},
+			"dependsOn": [
+				"[resourceId('Microsoft.Resources/deployments', 'mentoring-adf-nb_ArmTemplate_1')]"
+			]
+		},
+		{
+			"name": "mentoring-adf-nb_ArmTemplate_3",
+			"type": "Microsoft.Resources/deployments",
+			"apiVersion": "2024-03-01",
+			"properties": {
+				"mode": "incremental",
+				"templateLink": {
+					"uri": "[concat(parameters('containerUri'), '/ArmTemplate_3.json', parameters('containerSasToken'))]",
+					"contentVersion": "1.0.0.0"
+				},
+				"parameters": {
+					"factoryName": {
+						"value": "[parameters('factoryName')]"
+					}
+				}
+			},
+			"dependsOn": [
+				"[resourceId('Microsoft.Resources/deployments', 'mentoring-adf-nb_ArmTemplate_2')]"
+			]
+		}
+	]
+}
